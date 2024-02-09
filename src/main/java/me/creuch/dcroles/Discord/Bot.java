@@ -10,6 +10,8 @@ import me.creuch.dcroles.YamlConfig;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import org.bukkit.Bukkit;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -28,7 +30,8 @@ public class Bot {
 
     public Bot loadBot() {
         try {
-            jda = JDABuilder.createDefault(yamlConfig.getConfigList().get("config.yml").getString("bot.token"))
+            jda = JDABuilder.createDefault(yamlConfig.getConfigList().get("config.yml").getString("bot.token"), GatewayIntent.GUILD_MESSAGES, GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MEMBERS)
+                    .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER, CacheFlag.SCHEDULED_EVENTS)
                     .addEventListeners(new BotListener(instance))
                     .build().awaitReady();
         } catch(InvalidTokenException e) {

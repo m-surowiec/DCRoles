@@ -14,10 +14,13 @@ bot:
     # manually change to 'true'
     embedSent: false
     channelID: XXX
+    formTitle: "Nadaj rangę | SURVIVAL"
+    formID: "getRoleSurvival"
     embed:
       title: "Nadaj rangę!"
       desc: "Nadaj sobie rangę klikając poniższy przycisk\n**:)**"
       color: "#1953bf"
+      buttonID: "getRoleSurvival"
       buttonText: "Nadaj rangę"
 
   command:

@@ -7,6 +7,7 @@ import me.creuch.dcroles.MyPlayer;
 import me.creuch.dcroles.YamlConfig;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -20,10 +21,12 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.LayoutComponent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
+import net.dv8tion.jda.api.requests.RestAction;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -45,6 +48,7 @@ public class BotListener extends ListenerAdapter {
         this.instance = instance;
     }
 
+
     @Override
     public void onGuildReady(@NotNull GuildReadyEvent event) {
         YamlConfiguration config = instance.getYamlConfigClass().getConfigList().get("config.yml");
@@ -61,19 +65,34 @@ public class BotListener extends ListenerAdapter {
                 embedBuilder.setTitle(config.getString("bot.form.embed.title"));
                 embedBuilder.setDescription(config.getString("bot.form.embed.desc"));
                 embedBuilder.setColor(Color.decode(config.getString("bot.form.embed.color")));
-                Button button = Button.primary("getRoleButton", config.getString("bot.form.embed.buttonText"));
+                Button button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
                 ActionRow actionRow = ActionRow.of(button);
                 MessageEmbed embed = embedBuilder.build();
                 channel.sendMessageEmbeds(embed)
                         .setComponents(actionRow)
-                        .queue();
-                config.set("bot.form.embedSent", true);
-                try {
-                    config.save(new File(instance.getDataFolder(), config.getName()));
-                    instance.getYamlConfigClass().loadConfigs(instance.getConfigFileNameList());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                        .queue((message) -> {
+                            config.set("bot.form.embedSent", true);
+                            config.set("bot.form.embedID", message.getId() + "");
+                            try {
+                                File f = new File(instance.getDataFolder(), "config.yml");
+                                config.save(f);
+                                instance.getYamlConfigClass().loadConfigs(instance.getConfigFileNameList());
+                            } catch (IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+            } else {
+                Message msg = event.getGuild().getTextChannelById(config.getString("bot.form.channelID")).retrieveMessageById(config.getString("bot.form.embedID")).complete();
+                System.out.println("msg.getAuthor().getName() = " + msg.getAuthor().getName());
+                EmbedBuilder embedBuilder = new EmbedBuilder();
+                embedBuilder.setTitle(config.getString("bot.form.embed.title"));
+                embedBuilder.setDescription(config.getString("bot.form.embed.desc"));
+                embedBuilder.setColor(Color.decode(config.getString("bot.form.embed.color")));
+                Button button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                ActionRow actionRow = ActionRow.of(button);
+                msg.getComponents().forEach(lc -> actionRow.getComponents().addAll(lc.getComponents()));
+                MessageEmbed embed = embedBuilder.build();
+                msg.editMessageEmbeds(embed).setComponents(actionRow).queue();
             }
         }
 
@@ -166,7 +185,8 @@ public class BotListener extends ListenerAdapter {
 
     @Override
     public void onButtonInteraction(ButtonInteractionEvent event) {
-        if (event.getComponentId().equals("getRoleButton")) {
+        YamlConfiguration config = instance.getYamlConfigClass().getConfigList().get("config.yml");
+        if (event.getComponentId().equals(config.getString("bot.form.embed.buttonID"))) {
             TextInput nick = TextInput.create("nick", "Nick Minecraft", TextInputStyle.SHORT)
                     .setPlaceholder("Twój nick z minecraft")
                     .setMinLength(3)
@@ -179,7 +199,7 @@ public class BotListener extends ListenerAdapter {
                     .setMaxLength(16)
                     .build();
 
-            Modal modal = Modal.create("getRoleModal", "Odbierz rangę")
+            Modal modal = Modal.create(config.getString("bot.form.formID"), config.getString("bot.form.formTitle"))
                     .addComponents(ActionRow.of(nick), ActionRow.of(code))
                     .build();
 
@@ -189,8 +209,8 @@ public class BotListener extends ListenerAdapter {
 
     @Override
     public void onModalInteraction(@NotNull ModalInteractionEvent event) {
-        if (event.getModalId().equals("getRoleModal")) {
-            YamlConfiguration config = instance.getYamlConfigClass().getConfigList().get("config.yml");
+        YamlConfiguration config = instance.getYamlConfigClass().getConfigList().get("config.yml");
+        if (event.getModalId().equals(config.getString("bot.form.formID"))) {
             String nickOption = event.getValue("nick").getAsString();
             String codeOption = event.getValue("code").getAsString();
             User user = event.getUser();
@@ -200,7 +220,6 @@ public class BotListener extends ListenerAdapter {
             MyPlayer myPlayer = new MyPlayer(p, instance);
             YamlConfiguration lang = instance.getYamlConfigClass().getConfigList().get("lang.yml");
             boolean embed = lang.getBoolean("discord.embed");
-            System.out.println("embed = " + embed);
             EmbedBuilder embedBuilder = new EmbedBuilder();
             if(embed) {
                 embedBuilder.setTitle(instance.replacePlaceholders(lang.getString("discord.embedTitle"), p));
