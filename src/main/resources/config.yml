@@ -11,7 +11,6 @@ bot:
   # form / command / both
   getType: "both"
   form:
-    # manually change to 'true'
     embedSent: false
     channelID: XXX
     formTitle: "Nadaj rangę | SURVIVAL"
@@ -22,6 +21,7 @@ bot:
       color: "#1953bf"
       buttonID: "getRoleSurvival"
       buttonText: "Nadaj rangę"
+      buttonEmoji: ":hammer:"
 
   command:
     name: "giverank"

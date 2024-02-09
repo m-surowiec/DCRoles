@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -21,6 +22,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.Component;
 import net.dv8tion.jda.api.interactions.components.LayoutComponent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
@@ -65,7 +67,7 @@ public class BotListener extends ListenerAdapter {
                 embedBuilder.setTitle(config.getString("bot.form.embed.title"));
                 embedBuilder.setDescription(config.getString("bot.form.embed.desc"));
                 embedBuilder.setColor(Color.decode(config.getString("bot.form.embed.color")));
-                Button button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                Button button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText")).withEmoji(Emoji.fromFormatted(config.getString("bot.form.embed.buttonEmoji") + ""));
                 ActionRow actionRow = ActionRow.of(button);
                 MessageEmbed embed = embedBuilder.build();
                 channel.sendMessageEmbeds(embed)
@@ -83,12 +85,16 @@ public class BotListener extends ListenerAdapter {
                         });
             } else {
                 Message msg = event.getGuild().getTextChannelById(config.getString("bot.form.channelID")).retrieveMessageById(config.getString("bot.form.embedID")).complete();
-                System.out.println("msg.getAuthor().getName() = " + msg.getAuthor().getName());
+                for(LayoutComponent c : msg.getComponents()) {
+                    for(Button b : c.getButtons()) {
+                        if(b.getId().equalsIgnoreCase(config.getString("bot.form.embed.buttonID"))) return;
+                    }
+                }
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setTitle(config.getString("bot.form.embed.title"));
                 embedBuilder.setDescription(config.getString("bot.form.embed.desc"));
                 embedBuilder.setColor(Color.decode(config.getString("bot.form.embed.color")));
-                Button button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                Button button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText")).withEmoji(Emoji.fromFormatted(config.getString("bot.form.embed.buttonEmoji") + ""));
                 ActionRow actionRow = ActionRow.of(button);
                 msg.getComponents().forEach(lc -> actionRow.getComponents().addAll(lc.getComponents()));
                 MessageEmbed embed = embedBuilder.build();
