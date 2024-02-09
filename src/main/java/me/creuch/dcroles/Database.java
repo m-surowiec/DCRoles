@@ -19,7 +19,7 @@ public class Database {
 
     final DCRoles instance;
     YamlConfiguration config;
-    Connection conn;
+    static Connection conn;
 
     public Database(DCRoles instance) {
         this.instance = instance;
@@ -50,17 +50,10 @@ public class Database {
             Statement stmt = conn.createStatement();
             String sql = "CREATE TABLE IF NOT EXISTS userData(username varchar(16), role varchar(16), code varchar(16), used boolean);";
             stmt.executeUpdate(sql);
-            conn.close();
             stmt.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    public HashMap<String, String> getPlayerData(String pName) {
-        HashMap<String, String> playerData = new HashMap<>();
-        Connection conn = getConnection();
-        return playerData;
     }
 
 }

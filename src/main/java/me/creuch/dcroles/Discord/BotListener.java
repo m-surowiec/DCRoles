@@ -83,6 +83,11 @@ public class BotListener extends ListenerAdapter {
                         });
             } else {
                 Message msg = event.getGuild().getTextChannelById(config.getString("bot.form.channelID")).retrieveMessageById(config.getString("bot.form.embedID")).complete();
+                for(LayoutComponent c : msg.getComponents()) {
+                    for(Button b : c.getButtons()) {
+                        if(b.getId().equalsIgnoreCase(config.getString("bot.form.embed.buttonID"))) return;
+                    }
+                }
                 System.out.println("msg.getAuthor().getName() = " + msg.getAuthor().getName());
                 EmbedBuilder embedBuilder = new EmbedBuilder();
                 embedBuilder.setTitle(config.getString("bot.form.embed.title"));

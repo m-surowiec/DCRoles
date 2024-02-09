@@ -16,6 +16,7 @@ import revxrsal.commands.annotation.*;
 import revxrsal.commands.bukkit.BukkitCommandActor;
 import revxrsal.commands.orphan.OrphanCommand;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class GetCodeCommand implements OrphanCommand, TabCompleter {
             BukkitCommandActor sender,
             @Default("def") String target
     ) {
+        System.out.println("START " + Instant.now().getNano());
         YamlConfiguration config = yamlConfigClass.getConfigList().get("config.yml"), lang = yamlConfigClass.getConfigList().get("lang.yml");
         OfflinePlayer player = Bukkit.getOfflinePlayer(target);
         if (target.equals("def")) {
@@ -68,6 +70,7 @@ public class GetCodeCommand implements OrphanCommand, TabCompleter {
             }
 
             new Message(instance, yamlConfigClass.getMessage(lang, "commands.GETCODE.other")).getFormatted(player).send(sender.getSender());
+            System.out.println("sent " + Instant.now().getNano());
         }
     }
 
