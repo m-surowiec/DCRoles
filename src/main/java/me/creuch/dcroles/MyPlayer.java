@@ -21,11 +21,10 @@ public class MyPlayer {
 
     public Boolean exists() {
         try {
-            Connection conn = Database.conn;
+            Connection conn = instance.getDatabaseClass().getConnection();
             ResultSet profile = conn.createStatement().executeQuery(String.format("SELECT * FROM userData WHERE username = '%s'", p.getName()));
-            if(!profile.next()) return false;
             boolean value = profile.getString(3) != null;
-            
+            conn.close();
             return value;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -34,11 +33,10 @@ public class MyPlayer {
 
     public String getCode() {
         try {
-            Connection conn = Database.conn;
+            Connection conn = instance.getDatabaseClass().getConnection();
             ResultSet profile = conn.createStatement().executeQuery(String.format("SELECT * FROM userData WHERE username = '%s'", p.getName()));
-            profile.next();
             String value = profile.getString("code");
-            
+            conn.close();
             return value;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -47,11 +45,10 @@ public class MyPlayer {
 
     public String getRole() {
         try {
-            Connection conn = Database.conn;
+            Connection conn = instance.getDatabaseClass().getConnection();
             ResultSet profile = conn.createStatement().executeQuery(String.format("SELECT * FROM userData WHERE username = '%s'", p.getName()));
-            profile.next();
             String value = profile.getString("role");
-            
+            conn.close();
             return value;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -60,11 +57,10 @@ public class MyPlayer {
 
     public Boolean hasUsed() {
         try {
-            Connection conn = Database.conn;
+            Connection conn = instance.getDatabaseClass().getConnection();
             ResultSet profile = conn.createStatement().executeQuery(String.format("SELECT * FROM userData WHERE username = '%s'", p.getName()));
-            profile.next();
             boolean value = profile.getBoolean("used");
-            
+            conn.close();
             return value;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -73,10 +69,9 @@ public class MyPlayer {
 
     public void createUser(String role, String code) {
         try {
-            Connection conn = Database.conn;
+            Connection conn = instance.getDatabaseClass().getConnection();
             Integer sql = conn.createStatement().executeUpdate(String.format("INSERT INTO userData(username, role, code, used) VALUES('%s', '%s', '%s', false)", p.getName(), role, code));
-            System.out.println(sql);
-            
+            conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -84,9 +79,9 @@ public class MyPlayer {
 
     public void setCode(String value) {
         try {
-            Connection conn = Database.conn;
+            Connection conn = instance.getDatabaseClass().getConnection();
             Integer sql = conn.createStatement().executeUpdate(String.format("UPDATE userData SET code = '%s' WHERE username = '%s'", value, p.getName()));
-            
+            conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -94,9 +89,9 @@ public class MyPlayer {
 
     public void setRole(String value) {
         try {
-            Connection conn = Database.conn;
+            Connection conn = instance.getDatabaseClass().getConnection();
             Integer sql = conn.createStatement().executeUpdate(String.format("UPDATE userData SET role = '%s' WHERE username = '%s'", value, p.getName()));
-            
+            conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -104,9 +99,9 @@ public class MyPlayer {
 
     public void setUsed(boolean value) {
         try {
-            Connection conn = Database.conn;
+            Connection conn = instance.getDatabaseClass().getConnection();
             Integer sql = conn.createStatement().executeUpdate(String.format("UPDATE userData SET used = %s WHERE username = '%s'", value, p.getName()));
-            
+            conn.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -20,7 +20,6 @@ import org.checkerframework.checker.index.qual.GTENegativeOne;
 import revxrsal.commands.bukkit.BukkitCommandHandler;
 import revxrsal.commands.orphan.Orphans;
 
-import java.sql.SQLException;
 import java.util.Random;
 
 @FieldDefaults(level= AccessLevel.PRIVATE)
@@ -68,11 +67,6 @@ public final class DCRoles extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        try {
-            Database.conn.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
         getServer().getConsoleSender().sendMessage("[DCRoles] Wyłączanie...");
     }
 
