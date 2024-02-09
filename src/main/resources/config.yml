@@ -1,0 +1,58 @@
+debug: true
+
+database:
+  type: SQLite
+  username: xxx
+  password: xxx
+  url: xxx
+
+bot:
+  token: XXX
+  # form / command / both
+  getType: "both"
+  form:
+    # manually change to 'true'
+    embedSent: false
+    channelID: XXX
+    embed:
+      title: "Nadaj rangę!"
+      desc: "Nadaj sobie rangę klikając poniższy przycisk\n**:)**"
+      color: "#1953bf"
+      buttonText: "Nadaj rangę"
+
+  command:
+    name: "giverank"
+    description: "Uzyskaj rangę z serwera"
+    commandOptions:
+      NICK:
+        name: "nick"
+        desc: "Twój nick Minecraft"
+      CODE:
+        name: "kod"
+        desc: "Twój kod z /dcGetCode"
+
+  logEmbed:
+    channelID: XXX
+    title: "Odebrano rangę! **SURVIVAL**"
+    desc: "**Nick:** {NICK}\n
+           **Ranga:** {ROLE}\n
+           **Discord:** {DISCORD}"
+    color: "#1953bf"
+
+roles:
+  VIP:
+    id:
+      - 1073344115191844956
+
+commands:
+  RELOAD:
+    name: dcreload
+    permission: dcr.reload
+  GETCODE:
+    name: dcgetcode
+    self:
+      permission: dcr.getcode.self
+    permission: dcr.getcode.other
+  MANAGEUSER:
+    name: dcmanage
+    permission: dcr.manageuser

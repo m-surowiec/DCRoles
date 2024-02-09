@@ -1,0 +1,53 @@
+prefix: "<#0083FF>&lD<#0083FF>&lC<#0083FF>&lR<#0083FF>&lo<#0083FF>&ll<#0083FF>&le<#0083FF>&ls&r"
+
+noPermission: "{P}&c Nie masz permisji."
+executorIsNotHuman: "{P}&c Ta komenda jest dla graczy."
+playerDoesNotExist: "{P}&c Taki gracz nie istnieje."
+
+firstJoinPlayer:
+  - "{P}&f Wygenerowano Twój profil:"
+  - "   &8→&7 Ranga: <#6a89de>{ROLE}"
+  - "<click:copy_to_clipboard:{CODE}>   &8→&7 Kod: <#6a89de>{CODE}"
+
+bot:
+  invalidToken:
+    - "[DCRoles] &cNiepoprawny token bota."
+    - "[DCRoles] Popraw go i zrestartuj serwer"
+
+discord:
+  embed: true
+  embedColor: "#1953bf"
+  embedTitle: "Nadaj rangę"
+  command:
+    doesNotExist: "Ten gracz nie istnieje."
+    invalidCode: "Niepoprawny kod. Popraw go i spróbuj ponownie."
+    defaultRole: "Ten gracz nie ma wykupionej rangi."
+    alreadyUsed: "Ten kod został już użyty."
+    success: "Poprawny kod. Nadaję {AMOUNT} roli z rangi {ROLE}"
+
+commands:
+  RELOAD:
+    reloading: "{P}<#6a89de> Przeładowywanie pluginu..."
+    reloadedSuccess: "{P}&a Przeładowano."
+    reloadedError: "{P}&c Wystąpił błąd. Sprawdź konsolę."
+  GETCODE:
+    other:
+      - "<click:copy_to_clipboard:{CODE}>{P} &fKod {NICK} to: &8[Kopiuj]"
+      - "<click:copy_to_clipboard:{CODE}>   &8→ <#6a89de>{CODE}"
+    self:
+      - "<click:copy_to_clipboard:{CODE}>{P} &fTwój kod to: &8[Kopiuj]"
+      - "<click:copy_to_clipboard:{CODE}>   &8→ <#6a89de>{CODE}"
+  MANAGEUSER:
+    noInput: "{P}&f Podaj typ."
+    invalidType: "{P}&f Podaj poprawny typ."
+    noPlayerInput: "{P}&f Podaj nick gracza."
+    resetCodeSuccess: "{P}&f Pomyślnie zresetowano kod dla <#6a89de>{NICK}"
+    resetUsageSuccess: "{P}&f Pomyślnie zresetowano użycie kodu dla <#6a89de>{NICK}"
+    noRoleInput: "{P}&f Podaj rolę."
+    invalidRoleInput: "{P}&f Podaj poprawną rolę."
+    setRoleSuccess: "{P}&f Pomyślnie ustawiono rolę {NICK} na <#6a89de>{ROLE}"
+    viewProfile:
+      - "{P}&f Profil gracza <#6a89de>{NICK}&f:"
+      - "   &8→ &fRola: <#6a89de>{ROLE}"
+      - "<click:copy_to_clipboard:{CODE}>   &8→ &fKod: <#6a89de>{CODE}"
+      - "   &8→ &fUżyto: <#6a89de>{USED}"
