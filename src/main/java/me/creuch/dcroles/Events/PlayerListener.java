@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
 
@@ -26,11 +27,17 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerJoinEvent(PlayerJoinEvent e) {
         if(!e.getPlayer().isOnline()) return;
-        MyPlayer p = new MyPlayer(e.getPlayer(), instance);
-        if(p.exists()) return;
-        String code = instance.generateCode();
-        p.createUser("default", code);
-        Message msg = new Message(instance, instance.getYamlConfigClass().getMessage(instance.getYamlConfigClass().getConfigList().get("lang.yml"), "firstJoinPlayer")).getFormatted(e.getPlayer());
-        msg.send(e.getPlayer());
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                MyPlayer p = new MyPlayer(e.getPlayer(), instance);
+                if(p.exists()) return;
+                String code = instance.generateCode();
+                p.createUser("default", code);
+                Message msg = new Message(instance, instance.getYamlConfigClass().getMessage(instance.getYamlConfigClass().getConfigList().get("lang.yml"), "firstJoinPlayer")).getFormatted(e.getPlayer());
+                msg.send(e.getPlayer());
+            }
+        }.runTaskAsynchronously(instance);
     }
 }

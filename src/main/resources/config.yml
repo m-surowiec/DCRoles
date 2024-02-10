@@ -22,6 +22,7 @@ bot:
       color: "#1953bf"
       buttonID: "getRoleSurvival"
       buttonText: "Nadaj rangę"
+      buttonEmoji: ":hammer:"
 
   command:
     name: "giverank"

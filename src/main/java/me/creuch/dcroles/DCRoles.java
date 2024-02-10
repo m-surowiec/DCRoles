@@ -69,7 +69,7 @@ public final class DCRoles extends JavaPlugin {
     @Override
     public void onDisable() {
         try {
-            Database.conn.close();
+            getDatabaseClass().getConnection().close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -95,13 +95,20 @@ public final class DCRoles extends JavaPlugin {
     public void registerPermissions() {
         YamlConfiguration config = yamlConfigClass.getConfigList().get("config.yml");
         for(String s : config.getConfigurationSection("commands").getKeys(false)) {
+            final boolean[] c = {false};
             if(config.getString("commands." + s + ".permission") != null) {
                 Permission perm = new Permission(config.getString("commands." + s + ".permission"));
-                Bukkit.getPluginManager().addPermission(perm);
+                Bukkit.getPluginManager().getPermissions().forEach(permission -> {
+                    if(permission.getName().contains(perm.getName())) c[0] = true;
+                });
+                if(!c[0]) Bukkit.getPluginManager().addPermission(perm);
             }
             if(config.getString("commands." + s + ".self.permission") != null) {
                 Permission perm = new Permission(config.getString("commands." + s + ".self.permission"));
-                Bukkit.getPluginManager().addPermission(perm);
+                Bukkit.getPluginManager().getPermissions().forEach(permission -> {
+                    if(permission.getName().contains(perm.getName())) c[0] = true;
+                });
+                if(!c[0]) Bukkit.getPluginManager().addPermission(perm);
             }
         }
     }

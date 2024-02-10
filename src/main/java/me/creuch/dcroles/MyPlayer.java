@@ -5,16 +5,18 @@ import lombok.experimental.FieldDefaults;
 import org.bukkit.OfflinePlayer;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
-import java.util.Date;
 
-@FieldDefaults(level= AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class MyPlayer {
 
     OfflinePlayer p;
     DCRoles instance;
+
+    Boolean exists, used;
+    String role, code;
 
     public MyPlayer(final OfflinePlayer p, final DCRoles instance) {
         this.instance = instance;
@@ -22,84 +24,126 @@ public class MyPlayer {
     }
 
     public Boolean exists() {
-        try {
-            Connection conn = Database.conn;
-            ResultSet profile = conn.createStatement().executeQuery(String.format("SELECT code FROM userData WHERE username = '%s'", p.getName()));
-            return profile.next();
+        if(exists != null) return exists;
+        try (Connection conn = instance.getDatabaseClass().getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT code FROM userData WHERE username = ?")) { // Prepare inside the method
+            stmt.setString(1, p.getName());
+            try (ResultSet profile = stmt.executeQuery()) {
+                exists = profile.next();
+                return profile.next();
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
+
     public String getCode() {
-        try {
-            Connection conn = Database.conn;
-            System.out.println("got conn " + Instant.now().getNano());
-            ResultSet profile = conn.createStatement().executeQuery(String.format("SELECT code FROM userData WHERE username = '%s'", p.getName()));
-            System.out.println("got profile " + Instant.now().getNano());
-            profile.next();
-            System.out.println("got returning " + Instant.now().getNano());
-            return profile.getString("code");
+        if(code != null) return code;
+        try (Connection conn = instance.getDatabaseClass().getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT code FROM userData WHERE username = ?")) { // Prepare inside the method
+            stmt.setString(1, p.getName());
+            try (ResultSet profile = stmt.executeQuery()) {
+                if (profile.next()) {
+                    code = profile.getString("code");
+                    return profile.getString("code");
+                } else {
+                    return null;
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public String getRole() {
-        try {
-            Connection conn = Database.conn;
-            ResultSet profile = conn.createStatement().executeQuery(String.format("SELECT role FROM userData WHERE username = '%s'", p.getName()));
-            profile.next();
-            return profile.getString("role");
+        if(role != null) return role;
+        try (Connection conn = instance.getDatabaseClass().getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT role FROM userData WHERE username = ?")) { // Prepare inside the method
+            stmt.setString(1, p.getName());
+            try (ResultSet profile = stmt.executeQuery()) {
+                if (profile.next()) {
+                    role = profile.getString("role");
+                    return profile.getString("role");
+                } else {
+                    return null;
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
-
     public Boolean hasUsed() {
-        try {
-            Connection conn = Database.conn;
-            ResultSet profile = conn.createStatement().executeQuery(String.format("SELECT used FROM userData WHERE username = '%s'", p.getName()));
-            profile.next();
-            return profile.getBoolean("used");
+        if(used != null) return used;
+        try (Connection conn = instance.getDatabaseClass().getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT used FROM userData WHERE username = ?")) { // Prepare inside the method
+            stmt.setString(1, p.getName());
+            try (ResultSet profile = stmt.executeQuery()) {
+                if (profile.next()) {
+                    used = profile.getBoolean("used");
+                    return profile.getBoolean("used");
+                } else {
+                    return null;
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void createUser(String role, String code) {
-        try {
-            Connection conn = Database.conn;
-            Integer sql = conn.createStatement().executeUpdate(String.format("INSERT INTO userData(username, role, code, used) VALUES('%s', '%s', '%s', false)", p.getName(), role, code));
+        try (Connection conn = instance.getDatabaseClass().getConnection();
+             PreparedStatement stmt = conn.prepareStatement("INSERT INTO userData(username, role, code, used) VALUES(?, ?, ?, ?)")) {
+            stmt.setString(1, p.getName());
+            stmt.setString(2, role);
+            stmt.setString(3, code);
+            stmt.setBoolean(4, false);
+            stmt.executeUpdate();
+            this.role = role;
+            this.code = code;
+            this.used = false;
+            this.exists = true;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void setCode(String value) {
-        try {
-            Connection conn = Database.conn;
-            Integer sql = conn.createStatement().executeUpdate(String.format("UPDATE userData SET code = '%s' WHERE username = '%s'", value, p.getName()));
+        try (Connection conn = instance.getDatabaseClass().getConnection();
+             PreparedStatement stmt = conn.prepareStatement("UPDATE userData SET code = ? WHERE username = ?")) { // Prepare inside the method
+            stmt.setString(1, value);
+            stmt.setString(2, p.getName());
+            stmt.executeUpdate();
+            this.code = value;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
 
     public void setRole(String value) {
-        try {
-            Connection conn = Database.conn;
-            Integer sql = conn.createStatement().executeUpdate(String.format("UPDATE userData SET role = '%s' WHERE username = '%s'", value, p.getName()));
+        try (Connection conn = instance.getDatabaseClass().getConnection();
+             PreparedStatement stmt = conn.prepareStatement("UPDATE userData SET role = ? WHERE username = ?")) { // Prepare inside the method
+            stmt.setString(1, value);
+            stmt.setString(2, p.getName());
+            stmt.executeUpdate();
+            this.role = value;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public void setUsed(boolean value) {
-        try {
-            Connection conn = Database.conn;
-            Integer sql = conn.createStatement().executeUpdate(String.format("UPDATE userData SET used = %s WHERE username = '%s'", value, p.getName()));
+    public void setUsed(Boolean value) {
+        try (Connection conn = instance.getDatabaseClass().getConnection();
+             PreparedStatement stmt = conn.prepareStatement("UPDATE userData SET used = ? WHERE username = ?")) { // Prepare inside the method
+            stmt.setBoolean(1, value);
+            stmt.setString(2, p.getName());
+            stmt.executeUpdate();
+            this.used = value;
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
+
 }
