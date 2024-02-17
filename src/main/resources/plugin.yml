@@ -4,4 +4,4 @@ main: me.creuch.dcroles.DCRoles
 api-version: '1.19'
 author: '_Creuch'
 
-softdepend: [PlaceholderAPI, Skript]
+softdepend: [PlaceholderAPI]

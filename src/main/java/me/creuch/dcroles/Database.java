@@ -7,6 +7,8 @@ import lombok.experimental.FieldDefaults;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,12 +28,25 @@ public class Database {
 
     private void initializeDataSource() {
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl("jdbc:mysql://" + config.getString("database.url")); // Adjust if using SQLite
-        hikariConfig.setUsername(config.getString("database.username"));
-        hikariConfig.setPassword(config.getString("database.password"));
-        hikariConfig.setMaximumPoolSize(10);
-        hikariConfig.setMinimumIdle(5);
-
+        if(config.getString("database.type").equalsIgnoreCase("mysql")) {
+            hikariConfig.setJdbcUrl("jdbc:mysql://" + config.getString("database.url"));
+            hikariConfig.setUsername(config.getString("database.username"));
+            hikariConfig.setPassword(config.getString("database.password"));
+        } else {
+            if(!new File(instance.getDataFolder(), "DCRoles.db").exists()) {
+                try {
+                    new File(instance.getDataFolder(), "DCRoles.db").createNewFile();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            hikariConfig.setDriverClassName("org.sqlite.JDBC");
+            hikariConfig.setJdbcUrl("jdbc:sqlite:" + instance.getDataFolder().toString().replace("\\", "/") + "/DCRoles.db");
+        }
+        hikariConfig.setConnectionTestQuery("SELECT 1");
+        hikariConfig.setMaxLifetime(60000); // 60 Sec
+        hikariConfig.setIdleTimeout(45000); // 45 Sec
+        hikariConfig.setMaximumPoolSize(50); // 50 Connections (including idle connections)
         dataSource = new HikariDataSource(hikariConfig);
     }
 

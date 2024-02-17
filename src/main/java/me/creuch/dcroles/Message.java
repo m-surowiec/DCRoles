@@ -4,12 +4,12 @@ package me.creuch.dcroles;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -62,7 +62,7 @@ public class Message {
 
     public String toString() {
         StringBuilder s = new StringBuilder(MiniMessage.miniMessage().serialize(msg[0]));
-        for(int i = 1; i < msg.length; i++) {
+        for (int i = 1; i < msg.length; i++) {
             s.append(", ").append(MiniMessage.miniMessage().serialize(msg[i]));
         }
         return s.toString();
@@ -86,6 +86,26 @@ public class Message {
                     s[i] = translate(s[i]);
                     msg[i] = MiniMessage.miniMessage().deserialize(s[i]);
                 }
+            }
+        }
+        return this;
+    }
+
+    public Message getFormattedP(@NotNull MyPlayer p) {
+        lang = instance.getYamlConfigClass().getConfigList().get("lang.yml");
+        for (int i = 0; i < msg.length; i++) {
+            s[i] = s[i].replace("{P}", lang.getString("prefix"));
+            s[i] = translate(s[i]);
+            msg[i] = MiniMessage.miniMessage().deserialize(s[i]);
+        }
+        if (p.exists()) {
+            for (int i = 0; i < msg.length; i++) {
+                s[i] = s[i].replace("{ROLE}", p.getRole());
+                s[i] = s[i].replace("{CODE}", p.getCode());
+                s[i] = s[i].replace("{NICK}", p.getP().getName());
+                s[i] = s[i].replace("{USED}", String.valueOf(p.hasUsed()));
+                s[i] = translate(s[i]);
+                msg[i] = MiniMessage.miniMessage().deserialize(s[i]);
             }
         }
         return this;

@@ -9,6 +9,11 @@ firstJoinPlayer:
   - "   &8→&7 Ranga: <#6a89de>{ROLE}"
   - "<click:copy_to_clipboard:{CODE}>   &8→&7 Kod: <#6a89de>{CODE}"
 
+successLog:
+  - "{P}&f Gracz {NICK} odebrał rangę:"
+  - "   &8→&7 Ranga: <#6a89de>{ROLE}"
+  - "   &8→&7 Discord: <#6a89de>{DISCORD}"
+
 bot:
   invalidToken:
     - "[DCRoles] &cNiepoprawny token bota."

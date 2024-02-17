@@ -4,7 +4,6 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import me.creuch.dcroles.DCRoles;
 import me.creuch.dcroles.MyPlayer;
-import me.creuch.dcroles.YamlConfig;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
@@ -27,11 +26,9 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
-import net.dv8tion.jda.api.requests.RestAction;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -66,7 +63,20 @@ public class BotListener extends ListenerAdapter {
                 embedBuilder.setTitle(config.getString("bot.form.embed.title"));
                 embedBuilder.setDescription(config.getString("bot.form.embed.desc"));
                 embedBuilder.setColor(Color.decode(config.getString("bot.form.embed.color")));
-                Button button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                Button button;
+                switch (config.getString("bot.form.buttonStyle").toLowerCase()) {
+                    case "success":
+                        button = Button.success(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                        break;
+                    case "secondary":
+                        button = Button.secondary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                        break;
+                    case "destructive":
+                        button = Button.danger(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                        break;
+                    default:
+                        button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                }
                 button = button.withEmoji(Emoji.fromFormatted(config.getString("bot.form.embed.buttonEmoji")));
                 ActionRow actionRow = ActionRow.of(button);
                 MessageEmbed embed = embedBuilder.build();
@@ -94,14 +104,40 @@ public class BotListener extends ListenerAdapter {
                 embedBuilder.setTitle(config.getString("bot.form.embed.title"));
                 embedBuilder.setDescription(config.getString("bot.form.embed.desc").replace("\\n", "\n"));
                 embedBuilder.setColor(Color.decode(config.getString("bot.form.embed.color")));
-                Button button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                Button button;
+                switch (config.getString("bot.form.buttonStyle").toLowerCase()) {
+                    case "success":
+                        button = Button.success(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                        break;
+                    case "secondary":
+                        button = Button.secondary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                        break;
+                    case "destructive":
+                        button = Button.danger(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                        break;
+                    default:
+                        button = Button.primary(config.getString("bot.form.embed.buttonID"), config.getString("bot.form.embed.buttonText"));
+                }
+
                 button = button.withEmoji(Emoji.fromFormatted(config.getString("bot.form.embed.buttonEmoji")));
-                ActionRow actionRow = ActionRow.of(button);
-                List<LayoutComponent> lc = new ArrayList<>();
-                lc.add(actionRow);
-                lc.addAll(msg.getComponents());
-                MessageEmbed embed = embedBuilder.build();
-                msg.editMessageEmbeds(embed).setComponents(lc).queue();
+                if(config.getBoolean("bot.form.multiLineButtons")) {
+                    ActionRow actionRow = ActionRow.of(button);
+                    List<LayoutComponent> lc = new ArrayList<>();
+                    lc.add(actionRow);
+                    lc.addAll(msg.getComponents());
+                    MessageEmbed embed = embedBuilder.build();
+                    msg.editMessageEmbeds(embed).setComponents(lc).queue();
+                } else {
+                    List<Button> buttons = new ArrayList<>();
+                    buttons.add(button);
+                    for(LayoutComponent lc : msg.getComponents()) {
+                        buttons.addAll(lc.getButtons());
+                    }
+                    ActionRow actionRow = ActionRow.of(buttons);
+                    MessageEmbed embed = embedBuilder.build();
+                    msg.editMessageEmbeds(embed).setComponents(actionRow).queue();
+                }
+
             }
         }
 
@@ -167,7 +203,7 @@ public class BotListener extends ListenerAdapter {
             }
             return;
         }
-        myPlayer.setUsed(true);
+        myPlayer.setUsage(true);
         List<String> IDs = config.getStringList("roles." + myPlayer.getRole() + ".id");
         for(String roleID : IDs) {
             if(!member.getRoles().contains(event.getGuild().getRoleById(roleID))) {
@@ -189,6 +225,11 @@ public class BotListener extends ListenerAdapter {
         embedBuilder.setColor(Color.decode(config.getString("bot.logEmbed.color")));
         MessageEmbed embedMessage = embedBuilder.build();
         channel.sendMessageEmbeds(embedMessage).queue();
+        String[] lines = instance.getYamlConfigClass().getMessage(lang, "successLog");
+        for(int i = 0; i < lines.length; i++) {
+            lines[i] = lines[i].replace("{DISCORD}", user.getName());
+        }
+        new me.creuch.dcroles.Message(instance, lines).getFormatted(p).send(Bukkit.getConsoleSender());
     }
 
     @Override
@@ -196,13 +237,13 @@ public class BotListener extends ListenerAdapter {
         YamlConfiguration config = instance.getYamlConfigClass().getConfigList().get("config.yml");
         if (event.getComponentId().equals(config.getString("bot.form.embed.buttonID"))) {
             TextInput nick = TextInput.create("nick", "Nick Minecraft", TextInputStyle.SHORT)
-                    .setPlaceholder("Twój nick z minecraft")
+                    .setPlaceholder(config.getString("bot.command.commandOptions.NICK.desc"))
                     .setMinLength(3)
-                    .setMaxLength(16) // or setRequiredRange(10, 100)
+                    .setMaxLength(16)
                     .build();
 
             TextInput code = TextInput.create("code", "Twój Kod", TextInputStyle.SHORT)
-                    .setPlaceholder("Kod z /dcgetcode")
+                    .setPlaceholder(config.getString("bot.command.commandOptions.CODE.desc"))
                     .setMinLength(16)
                     .setMaxLength(16)
                     .build();
@@ -273,7 +314,7 @@ public class BotListener extends ListenerAdapter {
                 }
                 return;
             }
-            myPlayer.setUsed(true);
+            myPlayer.setUsage(true);
             List<String> IDs = config.getStringList("roles." + myPlayer.getRole() + ".id");
             for(String roleID : IDs) {
                 if(!member.getRoles().contains(event.getGuild().getRoleById(roleID))) {
@@ -295,6 +336,11 @@ public class BotListener extends ListenerAdapter {
             embedBuilder.setColor(Color.decode(config.getString("bot.logEmbed.color")));
             MessageEmbed embedMessage = embedBuilder.build();
             channel.sendMessageEmbeds(embedMessage).queue();
+            String[] lines = instance.getYamlConfigClass().getMessage(lang, "successLog");
+            for(int i = 0; i < lines.length; i++) {
+                lines[i] = lines[i].replace("{DISCORD}", user.getName());
+            }
+            new me.creuch.dcroles.Message(instance, lines).getFormatted(p).send(Bukkit.getConsoleSender());
         }
     }
 

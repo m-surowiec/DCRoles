@@ -1,6 +1,7 @@
 package me.creuch.dcroles;
 
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import org.bukkit.OfflinePlayer;
 
@@ -12,7 +13,7 @@ import java.sql.SQLException;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class MyPlayer {
 
-    OfflinePlayer p;
+    @Getter OfflinePlayer p;
     DCRoles instance;
 
     Boolean exists, used;
@@ -26,7 +27,7 @@ public class MyPlayer {
     public Boolean exists() {
         if(exists != null) return exists;
         try (Connection conn = instance.getDatabaseClass().getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT code FROM userData WHERE username = ?")) { // Prepare inside the method
+             PreparedStatement stmt = conn.prepareStatement("SELECT used FROM userData WHERE username = ?")) { // Prepare inside the method
             stmt.setString(1, p.getName());
             try (ResultSet profile = stmt.executeQuery()) {
                 exists = profile.next();
@@ -133,7 +134,7 @@ public class MyPlayer {
         }
     }
 
-    public void setUsed(Boolean value) {
+    public void setUsage(Boolean value) {
         try (Connection conn = instance.getDatabaseClass().getConnection();
              PreparedStatement stmt = conn.prepareStatement("UPDATE userData SET used = ? WHERE username = ?")) { // Prepare inside the method
             stmt.setBoolean(1, value);

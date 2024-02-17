@@ -6,19 +6,16 @@ import me.creuch.dcroles.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import revxrsal.commands.annotation.Default;
 import revxrsal.commands.annotation.DefaultFor;
 import revxrsal.commands.annotation.Description;
 import revxrsal.commands.annotation.Optional;
 import revxrsal.commands.bukkit.BukkitCommandActor;
 import revxrsal.commands.orphan.OrphanCommand;
 
-import javax.management.monitor.StringMonitor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -64,9 +61,10 @@ public class ManageUserCommand implements OrphanCommand, TabCompleter {
                 String code = instance.generateCode();
                 new Message(instance, yamlConfigClass.getMessage(lang, "commands.MANAGEUSER.resetCodeSuccess")).getFormatted(op).send(sender.getSender());
                 p.setCode(code);
+                p.setUsage(false);
             } else if (type.equalsIgnoreCase("resetUsage")) {
                 new Message(instance, yamlConfigClass.getMessage(lang, "commands.MANAGEUSER.resetUsageSuccess")).getFormatted(op).send(sender.getSender());
-                p.setUsed(false);
+                p.setUsage(false);
             } else if (type.equalsIgnoreCase("viewProfile")) {
                 new Message(instance, yamlConfigClass.getMessage(lang, "commands.MANAGEUSER.viewProfile")).getFormatted(op).send(sender.getSender());
             } else if (type.equalsIgnoreCase("setRole")) {
@@ -74,11 +72,12 @@ public class ManageUserCommand implements OrphanCommand, TabCompleter {
                     new Message(instance, yamlConfigClass.getMessage(lang, "commands.MANAGEUSER.noRoleInput")).getFormatted(op).send(sender.getSender());
                     return;
                 }
-                if (!new ArrayList<>(config.getConfigurationSection("roles").getKeys(false)).contains(role)) {
+                if (!new ArrayList<>(config.getConfigurationSection("roles").getKeys(false)).contains(role) && !role.equalsIgnoreCase("default")) {
                     new Message(instance, yamlConfigClass.getMessage(lang, "commands.MANAGEUSER.invalidRoleInput")).getFormatted(op).send(sender.getSender());
                     return;
                 }
                 p.setRole(role);
+                p.setUsage(false);
                 new Message(instance, yamlConfigClass.getMessage(lang, "commands.MANAGEUSER.setRoleSuccess")).getFormatted(op).send(sender.getSender());
             } else {
                 new Message(instance, yamlConfigClass.getMessage(lang, "commands.MANAGEUSER.invalidType")).getFormatted(op).send(sender.getSender());
@@ -106,6 +105,7 @@ public class ManageUserCommand implements OrphanCommand, TabCompleter {
             return names;
         } else if (strings.length == 3 && strings[0].equalsIgnoreCase("setRole")) {
             List<String> args = new ArrayList<>();
+            args.add("default");
             args.addAll(config.getConfigurationSection("roles").getKeys(false));
             return args;
         }
